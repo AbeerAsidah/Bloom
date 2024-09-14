@@ -1,0 +1,18 @@
+variables:
+  SSH_HOST: ${SSH_HOST}
+  SSH_USER: ${SSH_USER}
+  SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY}
+
+deploy-live:
+  only:
+    - main
+  stage: deploy
+  before_script:
+    - eval "$(ssh-agent -s)"
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $SSH_USER@$SSH_HOST 'cd /home4/webmydea/_subdomains/noor_demo_store; git stash && git stash clear && git pull origin main && /opt/cpanel/composer/bin/composer install && php artisan migrate --force'
+
+
